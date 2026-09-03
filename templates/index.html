@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Energy AI</title>
+    <!-- Plotly for Charts -->
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <i class="fa-solid fa-bolt-lightning text-emerald"></i>
+                <h2>Smart Energy AI</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-link active" data-target="dashboard-section"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+                <a href="#" class="nav-link" data-target="prediction-section"><i class="fa-solid fa-wand-magic-sparkles"></i> Prediction</a>
+                <a href="#" class="nav-link" data-target="analytics-section"><i class="fa-solid fa-chart-bar"></i> Analytics</a>
+                <a href="#" class="nav-link" data-target="insights-section"><i class="fa-solid fa-lightbulb"></i> AI Insights</a>
+                <a href="#" class="nav-link" data-target="performance-section"><i class="fa-solid fa-gauge-high"></i> Model Performance</a>
+                <a href="#" class="nav-link" data-target="settings-section"><i class="fa-solid fa-gear"></i> Settings</a>
+            </nav>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Top Bar -->
+            <header class="topbar">
+                <div class="topbar-left">
+                    <button class="menu-toggle" id="menu-toggle"><i class="fa-solid fa-bars"></i></button>
+                    <h1 class="page-title" id="page-title">Dashboard</h1>
+                </div>
+                <div class="topbar-right">
+                    <span class="badge mode-badge"><i class="fa-solid fa-database"></i> Historical Dataset Mode</span>
+                    <span class="status-indicator" id="api-status" title="Connecting..."><i class="fa-solid fa-circle"></i></span>
+                </div>
+            </header>
+
+            <!-- Scrollable Content -->
+            <div class="content-wrapper">
+
+                <!-- 1. Dashboard Section -->
+                <section id="dashboard-section" class="content-section active">
+                    <div class="header-banner">
+                        <h2>Household Energy Intelligence</h2>
+                        <p>Historical energy overview and ML-powered prediction platform.</p>
+                    </div>
+
+                    <!-- KPI Cards -->
+                    <div class="kpi-grid">
+                        <div class="card kpi-card">
+                            <div class="kpi-title">Average Consumption</div>
+                            <div class="kpi-value" id="kpi-avg">-- Wh</div>
+                            <div class="kpi-desc">Historical Dataset</div>
+                        </div>
+                        <div class="card kpi-card">
+                            <div class="kpi-title">Latest Recorded</div>
+                            <div class="kpi-value" id="kpi-latest">-- Wh</div>
+                            <div class="kpi-desc">Most recent data point</div>
+                        </div>
+                        <div class="card kpi-card">
+                            <div class="kpi-title">Peak Hour</div>
+                            <div class="kpi-value" id="kpi-peak">--:--</div>
+                            <div class="kpi-desc">Highest usage average</div>
+                        </div>
+                        <div class="card kpi-card alert-card">
+                            <div class="kpi-title">AI Prediction Status</div>
+                            <div class="kpi-value text-emerald" id="kpi-status">STANDBY</div>
+                            <div class="kpi-desc">Run prediction to update</div>
+                        </div>
+                    </div>
+
+                    <!-- Charts Area -->
+                    <div class="charts-grid">
+                        <div class="card chart-card">
+                            <h3>Hourly Consumption Overview</h3>
+                            <div id="chart-hourly" class="chart-container"></div>
+                        </div>
+                        <div class="card chart-card">
+                            <h3>Weekly Consumption Patterns</h3>
+                            <div id="chart-daily" class="chart-container"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 2. Prediction Section -->
+                <section id="prediction-section" class="content-section">
+                    <div class="card prediction-card">
+                        <h2><i class="fa-solid fa-wand-magic-sparkles text-cyan"></i> Run ML Prediction</h2>
+                        <p class="text-secondary">Enter indoor, outdoor, and time conditions to predict expected appliance energy consumption.</p>
+                        
+                        <form id="prediction-form" class="prediction-form">
+                            <!-- Group 1: Time Features -->
+                            <fieldset>
+                                <legend>Date & Time Configuration</legend>
+                                <div class="form-grid">
+                                    <div class="input-group">
+                                        <label for="selected_date">Selected Date</label>
+                                        <input type="date" id="selected_date" name="selected_date" value="2016-03-18" required>
+                                    </div>
+                                    <div class="input-group">
+                                        <label for="selected_time">Selected Time</label>
+                                        <input type="time" id="selected_time" name="selected_time" value="18:00" required>
+                                    </div>
+                                </div>
+                            </fieldset>
+
+                            <!-- Group 2: Indoor Conditions -->
+                            <fieldset>
+                                <legend>Indoor Conditions</legend>
+                                <div class="form-grid">
+                                    <!-- Using friendly labels mapping to technical names (T3, RH_3 etc.) -->
+                                    <div class="input-group" title="Kitchen Humidity (RH_1)">
+                                        <label for="RH_1">Kitchen Humidity (%)</label>
+                                        <input type="number" id="RH_1" name="RH_1" min="0" max="100" step="0.1" value="40.0">
+                                    </div>
+                                    <div class="input-group" title="Living Room Humidity (RH_2)">
+                                        <label for="RH_2">Living Room Humidity (%)</label>
+                                        <input type="number" id="RH_2" name="RH_2" min="0" max="100" step="0.1" value="40.0">
+                                    </div>
+                                    <div class="input-group" title="Laundry Room Temp (T3)">
+                                        <label for="T3">Laundry Temp (°C)</label>
+                                        <input type="number" id="T3" name="T3" step="0.1" value="21.0">
+                                    </div>
+                                    <div class="input-group" title="Laundry Room Humidity (RH_3)">
+                                        <label for="RH_3">Laundry Humidity (%)</label>
+                                        <input type="number" id="RH_3" name="RH_3" min="0" max="100" step="0.1" value="39.0">
+                                    </div>
+                                    <div class="input-group" title="Office Room Humidity (RH_4)">
+                                        <label for="RH_4">Office Humidity (%)</label>
+                                        <input type="number" id="RH_4" name="RH_4" min="0" max="100" step="0.1" value="39.0">
+                                    </div>
+                                    <div class="input-group" title="Bathroom Temp (T5)">
+                                        <label for="T5">Bathroom Temp (°C)</label>
+                                        <input type="number" id="T5" name="T5" step="0.1" value="19.5">
+                                    </div>
+                                    <div class="input-group" title="Bathroom Humidity (RH_5)">
+                                        <label for="RH_5">Bathroom Humidity (%)</label>
+                                        <input type="number" id="RH_5" name="RH_5" min="0" max="100" step="0.1" value="50.0">
+                                    </div>
+                                    <div class="input-group" title="Office Room Temperature (T4)">
+                                        <label for="T4">Office Temp (°C)</label>
+                                        <input type="number" id="T4" name="T4" step="0.1" value="20.0">
+                                    </div>
+                                    <div class="input-group" title="Teenager Room 2 Temp (T8)">
+                                        <label for="T8">Teenager Room Temp (°C)</label>
+                                        <input type="number" id="T8" name="T8" step="0.1" value="21.5">
+                                    </div>
+                                    <div class="input-group" title="Teenager Room 2 Humidity (RH_8)">
+                                        <label for="RH_8">Teenager Room Humidity (%)</label>
+                                        <input type="number" id="RH_8" name="RH_8" min="0" max="100" step="0.1" value="42.0">
+                                    </div>
+                                    <div class="input-group" title="Ironing Room Humidity (RH_7)">
+                                        <label for="RH_7">Ironing Room Humidity (%)</label>
+                                        <input type="number" id="RH_7" name="RH_7" min="0" max="100" step="0.1" value="41.0">
+                                    </div>
+                                    <div class="input-group" title="Lighting Energy (lights)">
+                                        <label for="lights">Lighting Usage (Wh)</label>
+                                        <input type="number" id="lights" name="lights" min="0" step="10" value="0.0">
+                                    </div>
+                                </div>
+                            </fieldset>
+
+                            <!-- Group 3: Outdoor Conditions -->
+                            <fieldset>
+                                <legend>Outdoor Conditions</legend>
+                                <div class="form-grid">
+                                    <div class="input-group" title="Outdoor North Humidity (RH_6)">
+                                        <label for="RH_6">Outdoor Humidity (%)</label>
+                                        <input type="number" id="RH_6" name="RH_6" min="0" max="100" step="0.1" value="80.0">
+                                    </div>
+                                    <div class="input-group" title="Atmospheric Pressure (Press_mm_hg)">
+                                        <label for="Press_mm_hg">Pressure (mm Hg)</label>
+                                        <input type="number" id="Press_mm_hg" name="Press_mm_hg" step="1" value="755.0">
+                                    </div>
+                                    <div class="input-group" title="Outdoor weather-station humidity (RH_out)">
+                                        <label for="RH_out">Outdoor Station Humidity (%)</label>
+                                        <input type="number" id="RH_out" name="RH_out" min="0" max="100" step="0.1" value="80.0">
+                                    </div>
+                                </div>
+                            </fieldset>
+                            
+                            <div class="form-actions">
+                                <button type="submit" id="btn-predict" class="btn-primary">
+                                    <span>Predict Consumption</span>
+                                    <i class="fa-solid fa-arrow-right"></i>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </section>
+
+                <!-- 3. Analytics Section -->
+                <section id="analytics-section" class="content-section">
+                    <div class="header-banner">
+                        <h2>Consumption Analytics</h2>
+                        <p>Analyze historical dataset trends and patterns.</p>
+                    </div>
+                    <div class="card full-width">
+                        <h3>Interactive Heatmap (Day vs Hour)</h3>
+                        <p class="text-secondary mb-2">Visualize peak consumption periods historically.</p>
+                        <div id="chart-heatmap" class="chart-container" style="height: 500px;"></div>
+                    </div>
+                </section>
+
+                <!-- 4. Insights Section -->
+                <section id="insights-section" class="content-section">
+                    <div class="header-banner">
+                        <h2>AI Insights & Recommendations</h2>
+                        <p>Intelligent breakdown based on ML prediction results.</p>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>Latest Prediction Insight</h3>
+                        <div id="insight-content" class="insight-empty">
+                            <i class="fa-solid fa-circle-info text-cyan mb-2"></i>
+                            <p>No prediction run yet. Navigate to the Prediction tab to generate insights.</p>
+                        </div>
+                    </div>
+
+                    <div class="card mt-2">
+                        <h3>Appliance-Level Details</h3>
+                        <div class="alert-box alert-info">
+                            <i class="fa-solid fa-circle-exclamation"></i>
+                            <div>
+                                <strong>Dataset Limitation:</strong>
+                                The current trained model predicts aggregate household appliance consumption. It cannot identify or control individual appliances.
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 5. Performance Section -->
+                <section id="performance-section" class="content-section">
+                    <div class="header-banner">
+                        <h2>Model Performance</h2>
+                        <p>Evaluate the accuracy of the underlying Linear Regression model.</p>
+                    </div>
+                    
+                    <div class="kpi-grid">
+                        <div class="card kpi-card">
+                            <div class="kpi-title">MAE (Mean Absolute Error)</div>
+                            <div class="kpi-value" id="perf-mae">--</div>
+                        </div>
+                        <div class="card kpi-card">
+                            <div class="kpi-title">RMSE (Root Mean Square Error)</div>
+                            <div class="kpi-value" id="perf-rmse">--</div>
+                        </div>
+                        <div class="card kpi-card">
+                            <div class="kpi-title">R² Score</div>
+                            <div class="kpi-value" id="perf-r2">--</div>
+                        </div>
+                        <div class="card kpi-card">
+                            <div class="kpi-title">MAPE</div>
+                            <div class="kpi-value" id="perf-mape">-- %</div>
+                        </div>
+                    </div>
+
+                    <div class="card mt-2 full-width">
+                        <h3>Actual vs Predicted (Test Subset)</h3>
+                        <div id="chart-performance" class="chart-container"></div>
+                    </div>
+                </section>
+
+                <!-- 6. Settings Section -->
+                <section id="settings-section" class="content-section">
+                    <div class="card">
+                        <h2><i class="fa-solid fa-gear"></i> Application Settings & Info</h2>
+                        <hr>
+                        <div class="settings-grid">
+                            <div class="settings-item">
+                                <strong>Application Name:</strong> Smart Energy AI
+                            </div>
+                            <div class="settings-item">
+                                <strong>Target Variable:</strong> Appliances (Wh)
+                            </div>
+                            <div class="settings-item">
+                                <strong>Model Loaded:</strong> <span id="setting-model-type">Loading...</span>
+                            </div>
+                            <div class="settings-item">
+                                <strong>High Consumption Threshold:</strong> <span id="setting-threshold">Loading...</span> Wh
+                            </div>
+                            <div class="settings-item">
+                                <strong>Technology Stack:</strong> FastAPI + Vanilla JS + Plotly.js
+                            </div>
+                        </div>
+                        
+                        <div class="mt-2">
+                            <h3>About the Project</h3>
+                            <p class="text-secondary">
+                                This platform predicts household appliance electricity consumption using historical data and Machine Learning. 
+                                The source dataset is the Appliances Energy Prediction dataset. 
+                            </p>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Reusable Modal System -->
+    <div class="modal-overlay" id="global-modal">
+        <div class="modal-content card">
+            <div class="modal-header">
+                <h3 id="modal-title">Notification</h3>
+                <button class="modal-close" id="modal-close">&times;</button>
+            </div>
+            <div class="modal-body" id="modal-body">
+                Message content goes here.
+            </div>
+            <div class="modal-footer" id="modal-footer">
+                <button class="btn-primary" id="modal-btn-primary">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <!-- Custom Scripts -->
+    <script src="/static/js/charts.js"></script>
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
